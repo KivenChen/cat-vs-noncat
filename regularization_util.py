@@ -4,6 +4,7 @@ try:
 	import h5py
 except ImportError:
 	print("regularization util: ")
+	# does this blocked the indexing of functions?
 
 
 
