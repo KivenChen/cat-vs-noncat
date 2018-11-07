@@ -31,7 +31,7 @@ def make_conv_model(size=(64, 64, 3), normalize=False):
     X = Dense(1)(X)
     X = Activation('sigmoid')(X)
     model = Model(X_input, X)
-    model.compile(optimizer=adam())
+    model.compile(optimizer=adam(), loss='binary_crossentropy', metrics=['accuracy',])
     return model
     # second conv
 
