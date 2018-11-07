@@ -19,18 +19,21 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
-def make_conv_model(size=(32, 32)):
+def make_conv_model(size=(32, 32), normalize=False):
     X_input = Input(shape=size)
     # first layer
     X = Conv2D(8, (4, 4), padding='same')(X_input)
-    X = BatchNormalization()(X)
+    if normalize:
+    	X = BatchNormalization()(X)
     X = Activation('relu')
     X = MaxPooling2D()  # now 16*16
-    X = Dense(8, activation='relu')(x)
+    X = Dense(8, activation='relu')(X)
+    X = Dense(1, activation='relu')(X)
     X = Activation('sigmoid')(X)
     model = Model(X_input, X)
     return model.compile(optimizer=optimizers.adam())
     # second conv
+
 
 def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     # creates a model of fully connected layers
@@ -47,6 +50,32 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     model = Model(X_input, X)
     model.compile(optimizer=adam(lr=lr), loss='binary_crossentropy', metrics=['accuracy',])
     return model
+
+
+def conv_main(iterations=2500, normalize=False):
+    train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
+    # The "-1" makes reshape flatten the remaining dimensions
+    # Adapt the dims of y to fit the Keras Framework
+    train_y = train_y.T
+    test_y = test_y.T
+    # Standardize data to have feature values between 0 and 1.
+    train_x = train_x_orig / 255.
+    test_x = test_x_orig / 255.
+
+    print("train", train_x.shape)
+    print("test", test_x.shape)
+    print("train_y", train_y.shape)
+    model = make_conv_model(normalize=normalize)
+    for i in range(iterations):
+        model.fit(train_x, train_y, verbose=0)
+        (
+        evaluate_model(model, train_x, train_y, "train set"),
+        evaluate_model(model, test_x, test_y, "test set"),
+        print(i, "th iteration")
+        ) if i % 100 == 1 else 0
+    model.fit(train_x, train_y, batch_size=233, epochs=1)
+    wheels.green("The final evaluation:")
+    evaluate_model(model, test_x, test_y, "test set")
 
 
 def mlp_main(iterations=2500, normalize=False):
@@ -86,8 +115,7 @@ def evaluate_model(model, x, y, name=None):
 
 
 if __name__ == "__main__":
-    with tf.device("/gpu:0"):
-        mlp_main(normalize=True)
+    conv_main(normalize=True)
         # sgd with normalization: 76%
         # took MUCH LONGER to train than the numpy version
         # without normalization: 34%  ......
