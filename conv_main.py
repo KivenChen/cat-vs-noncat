@@ -28,6 +28,7 @@ def make_conv_model(size=(64, 64, 3), normalize=False):
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)  # now 16*16
     X = Dense(8, activation='relu')(X)
+    X = Flatten()(X)
     X = Dense(1)(X)
     X = Activation('sigmoid')(X)
     model = Model(X_input, X)
