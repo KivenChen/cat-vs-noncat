@@ -19,10 +19,10 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
-def make_conv_model(size=(64, 64), normalize=False):
+def make_conv_model(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
     # first layer
-    X = Conv2D(8, (4, 4), padding='same')(X_input)
+    X = Conv2D(8, (8, 8), padding='same')(X_input)
     if normalize:
     	X = BatchNormalization()(X)
     X = Activation('relu')
