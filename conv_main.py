@@ -19,7 +19,7 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
-def make_conv_model(size=(32, 32), normalize=False):
+def make_conv_model(size=(64, 64), normalize=False):
     X_input = Input(shape=size)
     # first layer
     X = Conv2D(8, (4, 4), padding='same')(X_input)
