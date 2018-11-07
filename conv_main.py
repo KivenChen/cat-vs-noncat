@@ -19,6 +19,8 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
+f = open('log.txt')
+
 def make_conv_model(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
     # first layer
@@ -98,7 +100,7 @@ def mlp_main(iterations=2500, normalize=False):
     print("train_y", train_y.shape)
     model = make_mlp_model(normalize=normalize)
     for i in range(iterations):
-        model.fit(train_x, train_y, verbose=0)
+        callback = model.fit(train_x, train_y, verbose=1)
         (
         evaluate_model(model, train_x, train_y, "train set"),
         evaluate_model(model, test_x, test_y, "test set"),
@@ -107,6 +109,7 @@ def mlp_main(iterations=2500, normalize=False):
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
+    np.savetxt('log 1107', callback)
 
 
 def evaluate_model(model, x, y, name=None):
