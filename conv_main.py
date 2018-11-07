@@ -25,13 +25,13 @@ def make_conv_model(size=(64, 64, 3), normalize=False):
     X = Conv2D(8, (8, 8), padding='same')(X_input)
     if normalize:
     	X = BatchNormalization()(X)
-    X = Activation('relu')
+    X = Activation('relu')(X)
     X = MaxPooling2D()(X)  # now 16*16
     X = Dense(8, activation='relu')(X)
     X = Dense(1, activation='relu')(X)
     X = Activation('sigmoid')(X)
     model = Model(X_input, X)
-    return model.compile(optimizer=optimizers.adam())
+    return model.compile(optimizer=adam())
     # second conv
 
 
