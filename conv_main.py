@@ -19,8 +19,6 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
-f = open('log.txt')
-
 def make_conv_model(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
     # first layer
