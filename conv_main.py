@@ -26,7 +26,10 @@ def make_conv_model(size=(32, 32)):
     X = BatchNormalization()(X)
     X = Activation('relu')
     X = MaxPooling2D()  # now 16*16
-
+    X = Dense(8, activation='relu')(x)
+    X = Activation('sigmoid')(X)
+    model = Model(X_input, X)
+    return model.compile(optimizer=optimizers.adam())
     # second conv
 
 def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
