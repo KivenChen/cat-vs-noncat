@@ -19,6 +19,32 @@ from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 
 
+def make_conv_v2(size=(64, 64, 3), normalize=False):
+    X_input = Input(shape=size)
+    X = Conv2D(16, (16, 16), strides=(2, 2), padding='valid')(X_input)
+    if normalize:
+        X = BatchNormalization()(X)
+    X = Activation('relu')(X)
+    X = MaxPooling2D()(X)
+    
+    X = Conv2D(8, (4, 4))(X)
+    if normalize:
+        X = BatchNormalization()(X)
+    X = Activation('relu')(X)
+    X = AveragePooling2D()(X)
+    
+    X = Dense(8, activation='relu')(X)
+    X = Flatten()(X)
+    X = Dense(4, activation='relu')(X)
+    X = Flatten()(X)
+    X = Dense(1)(X)
+    
+    X = Activation('sigmoid')(X)
+    model = Model(X_input, X)
+    model.compile(optimizer=adam(), loss='binary_crossentropy', metrics=['accuracy',])
+    return model
+
+
 def make_conv_model(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
     # first layer
@@ -54,7 +80,7 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     return model
 
 
-def conv_main(iterations=2500, normalize=False):
+def conv_main(iterations=250, normalize=False):
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
     # The "-1" makes reshape flatten the remaining dimensions
     # Adapt the dims of y to fit the Keras Framework
@@ -67,14 +93,14 @@ def conv_main(iterations=2500, normalize=False):
     print("train", train_x.shape)
     print("test", test_x.shape)
     print("train_y", train_y.shape)
-    model = make_conv_model(normalize=normalize)
+    model = make_conv_v2(normalize=normalize)
     for i in range(iterations):
         model.fit(train_x, train_y, verbose=0)
         (
         evaluate_model(model, train_x, train_y, "train set"),
         evaluate_model(model, test_x, test_y, "test set"),
         print(i, "th iteration")
-        ) if i % 100 == 1 else 0
+        ) if i % 10 == 1 else 0
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
