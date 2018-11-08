@@ -39,8 +39,7 @@ def make_conv_v2(size=(64, 64, 3), normalize=False):
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
     
-    X = Conv2D(64, (2, 2))(X)
-    X = AveragePooling2D()(X)
+    X = Dense(4, activation='relu')(X)
     X = Flatten()(X)
     X = Dense(1)(X)
     
