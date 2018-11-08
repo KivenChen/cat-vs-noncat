@@ -33,7 +33,7 @@ def make_conv_v2(size=(64, 64, 3), normalize=False):
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
     
-    X = Conv2D(32, (4, 4))(X)
+    X = Conv2D(16, (4, 4))(X)
     if normalize:
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
