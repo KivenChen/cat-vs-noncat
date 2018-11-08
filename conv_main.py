@@ -107,7 +107,7 @@ def conv_main(iterations=250, normalize=False):
         evaluate_model(model, train_x, train_y, "train set"),
         evaluate_model(model, test_x, test_y, "test set"),
         print(i, "th iteration")
-        ) if i % 10 == 1 else 0
+        ) if True else 0
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
@@ -142,13 +142,17 @@ def mlp_main(iterations=2500, normalize=False):
     evaluate_model(model, test_x, test_y, "test set")
     np.savetxt('log 1107', callback)
 
+max = 88
 
 def evaluate_model(model, x, y, name=None):
     preds = model.evaluate(x, y)
     print("the result for", name, ":")
     print("loss = ", str(preds[0]))
     print("accuracy = ", str(preds[1]))
-
+    if preds[1]>max:
+        max = preds[1]
+        import time
+        time.sleep(10)
 
 if __name__ == "__main__":
     conv_main(normalize=True)
