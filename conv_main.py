@@ -21,7 +21,7 @@ from keras.initializers import glorot_uniform
 
 def make_conv_v2(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
-    X = Conv2D(8, (16, 16), strides=(2, 2), padding='valid')(X_input)
+    X = Conv2D(8, (12, 12), strides=(2, 2), padding='valid')(X_input)
     if normalize:
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
