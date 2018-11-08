@@ -132,17 +132,16 @@ def mlp_main(iterations=2500, normalize=False):
     model = make_mlp_model(normalize=normalize)
     for i in range(iterations):
         callback = model.fit(train_x, train_y, verbose=1)
-        (
         evaluate_model(model, train_x, train_y, "train set"),
-        evaluate_model(model, test_x, test_y, "test set"),
+        if evaluate_model(model, test_x, test_y, "test set"):
+            model.save("conv_model")
         print(i, "th iteration")
-        ) if i % 100 == 1 else 0
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
     np.savetxt('log 1107', callback)
 
-max = 88
+max = 93
 
 def evaluate_model(model, x, y, name=None):
     global max
@@ -152,9 +151,9 @@ def evaluate_model(model, x, y, name=None):
     print("accuracy = ", str(preds[1]))
     if preds[1]>max:
         max = preds[1]
-        import time
-        time.sleep(10)
-
+        return True
+    return False
+    
 if __name__ == "__main__":
     conv_main(normalize=True)
         # sgd with normalization: 76%
