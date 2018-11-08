@@ -21,7 +21,7 @@ from keras.initializers import glorot_uniform
 
 def make_conv_v2(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
-    X = Conv2D(8, (12, 12), padding='same')(X_input)
+    X = Conv2D(8, (16, 16), padding='same')(X_input)
     if normalize:
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
@@ -33,12 +33,15 @@ def make_conv_v2(size=(64, 64, 3), normalize=False):
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
     
-    X = Conv2D(16, (4, 4))(X)
+    X = Conv2D(32, (4, 4))(X)
     if normalize:
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
     
+    X = Conv2D(64, (2, 2))(X)
+    X = Activation('relu')(X)
+    X = AveragePooling2D()(X)
     X = Dense(4, activation='relu')(X)
     X = Flatten()(X)
     X = Dense(1)(X)
