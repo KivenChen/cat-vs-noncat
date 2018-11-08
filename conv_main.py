@@ -145,6 +145,7 @@ def mlp_main(iterations=2500, normalize=False):
 max = 88
 
 def evaluate_model(model, x, y, name=None):
+    global max
     preds = model.evaluate(x, y)
     print("the result for", name, ":")
     print("loss = ", str(preds[0]))
