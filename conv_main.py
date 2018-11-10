@@ -102,7 +102,7 @@ def conv_main(iterations=250, normalize=False):
     print("train_y", train_y.shape)
     model = make_conv_v2(normalize=normalize)
     for i in range(iterations):
-        model.fit(train_x, train_y, verbose=0)
+        model.fit(train_x, train_y, verbose=1)
         (
         evaluate_model(model, train_x, train_y, "train set"),
         evaluate_model(model, test_x, test_y, "test set"),
