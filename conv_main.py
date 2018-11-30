@@ -106,7 +106,7 @@ def conv_main(iterations=250, normalize=False):
         model.fit(train_x, train_y, verbose=1)
         if evaluate_model(model, test_x, test_y, "test set"):
             print("\n"*100, "test accrucy now:", max)
-            model.save("181130, acc:"+str(max))
+            model.save("181130-acc-"+str(max)+".h5")
         print(i," th iteration")
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
