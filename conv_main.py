@@ -17,7 +17,7 @@ import keras.backend as K
 from keras.utils.vis_utils import model_to_dot
 from keras.utils import plot_model
 from keras.initializers import glorot_uniform
-
+from time import sleep
 
 def make_conv_v2(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
@@ -86,6 +86,7 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     model.compile(optimizer=adam(lr=lr), loss='binary_crossentropy', metrics=['accuracy',])
     return model
 
+max = 87
 
 def conv_main(iterations=250, normalize=False):
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
@@ -103,17 +104,17 @@ def conv_main(iterations=250, normalize=False):
     model = make_conv_v2(normalize=normalize)
     for i in range(iterations):
         model.fit(train_x, train_y, verbose=1)
-        (
-        evaluate_model(model, train_x, train_y, "train set"),
-        evaluate_model(model, test_x, test_y, "test set"),
-        print(i, "th iteration")
-        ) if True else 0
+        if evaluate_model(model, test_x, test_y, "test set"):
+            print("\n"*100, "test accrucy now:", max)
+            model.save("181130, acc:"+str(max))
+        print(i," th iteration)
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
 
 
 def mlp_main(iterations=2500, normalize=False):
+    global max
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
     # The "-1" makes reshape flatten the remaining dimensions
     # There was a transposition, but it has been deleted to fit the Keras framework.
@@ -135,13 +136,16 @@ def mlp_main(iterations=2500, normalize=False):
         evaluate_model(model, train_x, train_y, "train set"),
         if evaluate_model(model, test_x, test_y, "test set"):
             model.save("conv_model")
+            print("\n"*100)
+            time.sleep(10)
+            print("accuracy now", max)
         print(i, "th iteration")
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
     np.savetxt('log 1107', callback)
 
-max = 93
+
 
 def evaluate_model(model, x, y, name=None):
     global max
