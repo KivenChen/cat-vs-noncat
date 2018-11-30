@@ -86,7 +86,7 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     model.compile(optimizer=adam(lr=lr), loss='binary_crossentropy', metrics=['accuracy',])
     return model
 
-max = 87
+max = 0.87
 
 def conv_main(iterations=250, normalize=False):
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
