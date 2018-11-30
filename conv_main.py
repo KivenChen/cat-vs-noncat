@@ -86,7 +86,7 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     model.compile(optimizer=adam(lr=lr), loss='binary_crossentropy', metrics=['accuracy',])
     return model
 
-max = 0.87
+max = 0.9
 
 def conv_main(iterations=250, normalize=False):
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
@@ -103,9 +103,9 @@ def conv_main(iterations=250, normalize=False):
     print("train_y", train_y.shape)
     model = make_conv_v2(normalize=normalize)
     for i in range(iterations):
-        model.fit(train_x, train_y, verbose=1)
+        model.fit(train_x, train_y, verbose=0)
         if evaluate_model(model, test_x, test_y, "test set"):
-            print("\n"*100, "test accrucy now:", max)
+            print("test accrucy now:", max)
             model.save("181130-acc-"+str(max)+".h5")
         print(i," th iteration")
     model.fit(train_x, train_y, batch_size=233, epochs=1)
@@ -150,10 +150,10 @@ def mlp_main(iterations=2500, normalize=False):
 def evaluate_model(model, x, y, name=None):
     global max
     preds = model.evaluate(x, y)
-    print("the result for", name, ":")
-    print("loss = ", str(preds[0]))
-    print("accuracy = ", str(preds[1]))
-    if preds[1]>max:
+    # print("the result for", name, ":")
+    # print("loss = ", str(preds[0]))
+    # print("accuracy = ", str(preds[1]))
+    if preds[1] > max:
         max = preds[1]
         return True
     return False
