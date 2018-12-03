@@ -1,5 +1,17 @@
 from os import listdir
 from os.path import isfile, join
+import sys
+
+
+def flush(*args):
+    # this function clears current line of the console and write something,
+    # which helps tracking the progress
+    CLEAR = " " * 100 + "\r"
+    sys.stdout.write(CLEAR)
+    for a in args:
+        sys.stdout.write(str(a))  # write() only accepts string
+    sys.stdout.flush()
+
 
 def justfilenames(dir):  # search all files in the dir
     onlyfiles = [f for f in listdir(dir) if isfile(join(dir, f))]

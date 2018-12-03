@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 from dnn_app_utils_v3 import *
 import wheels
+from wheels import *
+from kreprocessing import *
 '''loading keras 2d'''
 
 from keras import layers
@@ -18,6 +20,17 @@ from keras.utils.vis_utils import model_to_dot
 from keras.utils import plot_model
 from keras.initializers import glorot_uniform
 from time import sleep
+import logging as log
+from time import time
+
+num_turn = 1
+
+
+fmt = "%(asctime)-15s  %(levelname)s, %(filename)s, %(lineno)d ,  %(process)d : %(message)s"
+datefmt = "%a %d %b %Y %H:%M:%S"
+formatter = log.Formatter(fmt, datefmt)
+log.basicConfig(filename='catnet.log', level=log.INFO, format=fmt)
+
 
 def make_conv_v2(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
@@ -86,7 +99,9 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     model.compile(optimizer=adam(lr=lr), loss='binary_crossentropy', metrics=['accuracy',])
     return model
 
+
 max = 0.9
+
 
 def conv_main(iterations=250, normalize=False):
     train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
@@ -94,20 +109,33 @@ def conv_main(iterations=250, normalize=False):
     # Adapt the dims of y to fit the Keras Framework
     train_y = train_y.T
     test_y = test_y.T
+
+    trainset = [train_x_orig / 255]
+    log.info("Preprocessing begins")
+    for i in range(7):
+        time_st = time()
+        green(str(i)+" th preprocessing")
+        with tf.device('/cpu:0'):
+            trainset.append(random_img_preproc_pil(train_x_orig) / 255)
+        log.info(str(i)+" th preprocessing complete. Duration: "+str( (time()-time_st) // 1))
     # Standardize data to have feature values between 0 and 1.
+    np.save("datasets\\preprocessed\\trainset", trainset)
     train_x = train_x_orig / 255.
     test_x = test_x_orig / 255.
-
+    exit()
     print("train", train_x.shape)
     print("test", test_x.shape)
     print("train_y", train_y.shape)
     model = make_conv_v2(normalize=normalize)
     for i in range(iterations):
-        model.fit(train_x, train_y, verbose=0)
+        for one_set in trainset:
+            model.fit(one_set, train_y, verbose=0)
+
         if evaluate_model(model, test_x, test_y, "test set"):
+            log.warning("reached a maximum: "+str(max))
             print("test accrucy now:", max)
-            model.save("181130-acc-"+str(max)+".h5")
-        print(i," th iteration")
+            model.save("model 181202\\181130-acc-"+str(max)+".h5")
+        print(i, " th iteration")
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
@@ -135,7 +163,7 @@ def mlp_main(iterations=2500, normalize=False):
         callback = model.fit(train_x, train_y, verbose=1)
         evaluate_model(model, train_x, train_y, "train set"),
         if evaluate_model(model, test_x, test_y, "test set"):
-            model.save("conv_model")
+            model.save("mlp_model")
             print("\n"*100)
             time.sleep(10)
             print("accuracy now", max)
@@ -149,7 +177,7 @@ def mlp_main(iterations=2500, normalize=False):
 
 def evaluate_model(model, x, y, name=None):
     global max
-    preds = model.evaluate(x, y)
+    preds = model.evaluate(x, y, verbose=0)
     # print("the result for", name, ":")
     # print("loss = ", str(preds[0]))
     # print("accuracy = ", str(preds[1]))
@@ -159,6 +187,7 @@ def evaluate_model(model, x, y, name=None):
     return False
     
 if __name__ == "__main__":
+
     conv_main(normalize=True)
         # sgd with normalization: 76%
         # took MUCH LONGER to train than the numpy version
