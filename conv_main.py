@@ -157,7 +157,7 @@ def conv_main(iterations=80, normalize=False):
     evaluate_model(model, test_x, test_y, "test set")
 
 
-def res_main(iterations=80, normalize=False):
+def res_main(iterations=250, normalize=False):
     # train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
     # The "-1" makes reshape flatten the remaining dimensions
     # Adapt the dims of y to fit the Keras Framework
