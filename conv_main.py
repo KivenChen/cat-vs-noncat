@@ -34,12 +34,14 @@ log.basicConfig(filename='catnet.log', level=log.INFO, format=fmt)
 
 def make_conv_v2(size=(64, 64, 3), normalize=False):
     X_input = Input(shape=size)
+    X_s = X_input
+    X_s = Conv2D(32, (36, 36), strides=(8,8))(X_s)
     X = Conv2D(8, (16, 16), padding='same')(X_input)
     if normalize:
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
-    
+
     X = Conv2D(16, (8, 8))(X)
     if normalize:
         X = BatchNormalization()(X)
@@ -51,7 +53,9 @@ def make_conv_v2(size=(64, 64, 3), normalize=False):
         X = BatchNormalization()(X)
     X = Activation('relu')(X)
     X = MaxPooling2D()(X)
-    
+
+    X = Add()([X, X_s])
+
     X = Conv2D(64, (2, 2))(X)
     X = Activation('relu')(X)
     X = AveragePooling2D()(X)
@@ -83,6 +87,9 @@ def make_conv_model(size=(64, 64, 3), normalize=False):
     # second conv
 
 
+
+
+
 def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
     # creates a model of fully connected layers
     # which is already compiled
@@ -103,39 +110,97 @@ def make_mlp_model(lr=0.001, size=(12288,), normalize=False):
 max = 0.9
 
 
-def conv_main(iterations=250, normalize=False):
-    train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
+
+def conv_main(iterations=80, normalize=False):
+    # train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
     # The "-1" makes reshape flatten the remaining dimensions
     # Adapt the dims of y to fit the Keras Framework
+    train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
+    trainset = np.load("datasets\\preprocessed\\trainset_nohue.npy")
+    train_x = trainset[0]
     train_y = train_y.T
     test_y = test_y.T
-
+    '''
     trainset = [train_x_orig / 255]
     log.info("Preprocessing begins")
     for i in range(7):
         time_st = time()
         green(str(i)+" th preprocessing")
         with tf.device('/cpu:0'):
-            trainset.append(random_img_preproc_pil(train_x_orig) / 255)
+            trainset.append(random_img_preproc_batch(train_x_orig, hue=False) / 255)
         log.info(str(i)+" th preprocessing complete. Duration: "+str( (time()-time_st) // 1))
     # Standardize data to have feature values between 0 and 1.
-    np.save("datasets\\preprocessed\\trainset", trainset)
-    train_x = train_x_orig / 255.
-    test_x = test_x_orig / 255.
+    np.save("datasets\\preprocessed\\trainset_nohue", trainset)
     exit()
-    print("train", train_x.shape)
+    '''
+    test_x = test_x_orig / 255.
+
+    print("train_x_original ", train_x.shape)
     print("test", test_x.shape)
     print("train_y", train_y.shape)
+    # model = load_model("resnet50_binary_init.h5")
     model = make_conv_v2(normalize=normalize)
+    # model = load_model("181130-acc-0.9600000023841858.h5")
+    # model.compile(optimizer=adam(lr=0.0001), loss='binary_crossenz tropy', metrics=['accuracy', ])
     for i in range(iterations):
-        for one_set in trainset:
-            model.fit(one_set, train_y, verbose=0)
+        for n, one_set in enumerate(trainset):
+            # flush(n, "th package of training example ")
+            model.fit(one_set, train_y, verbose=1)
+            if evaluate_model(model, test_x, test_y, "test set"):
+                log.warning("reached a maximum: " + str(max))
+                green("test accrucy now:"+str(max))
+                model.save("model 181203\\resblock accu" + str(max) + ".h5")
 
-        if evaluate_model(model, test_x, test_y, "test set"):
-            log.warning("reached a maximum: "+str(max))
-            print("test accrucy now:", max)
-            model.save("model 181202\\181130-acc-"+str(max)+".h5")
-        print(i, " th iteration")
+        print("### ",i, " th iteration")
+    model.fit(train_x, train_y, batch_size=233, epochs=1)
+    wheels.green("The final evaluation:")
+    evaluate_model(model, test_x, test_y, "test set")
+
+
+def res_main(iterations=80, normalize=False):
+    # train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
+    # The "-1" makes reshape flatten the remaining dimensions
+    # Adapt the dims of y to fit the Keras Framework
+    train_x_orig, train_y, test_x_orig, test_y, classes = load_data_from_npy()
+    trainset = np.load("datasets\\preprocessed\\trainset_nohue.npy")
+    train_x = trainset[0]
+    train_y = np.array(train_y, dtype='int')
+    test_y = np.array(test_y, dtype='int')
+    print(test_y.shape)
+    train_y = convert_to_one_hot(train_y, 2 ).T
+    test_y = convert_to_one_hot(test_y, 2).T
+    '''
+    trainset = [train_x_orig / 255]
+    log.info("Preprocessing begins")
+    for i in range(7):
+        time_st = time()
+        green(str(i)+" th preprocessing")
+        with tf.device('/cpu:0'):
+            trainset.append(random_img_preproc_batch(train_x_orig, hue=False) / 255)
+        log.info(str(i)+" th preprocessing complete. Duration: "+str( (time()-time_st) // 1))
+    # Standardize data to have feature values between 0 and 1.
+    np.save("datasets\\preprocessed\\trainset_nohue", trainset)
+    exit()
+    '''
+    test_x = test_x_orig / 255.
+
+    print("train_x_original ", train_x.shape)
+    print("test", test_x.shape)
+    print("train_y", train_y.shape)
+    model = load_model("resnet50_binary_init.h5")
+    # model = make_conv_v2(normalize=normalize)
+    # model = load_model("181130-acc-0.9600000023841858.h5")
+    # model.compile(optimizer=adam(lr=0.0001), loss='binary_crossenz tropy', metrics=['accuracy', ])
+    for i in range(iterations):
+        for n, one_set in enumerate(trainset):
+            # flush(n, "th package of training example ")
+            model.fit(one_set, train_y, verbose=1)
+            if evaluate_model(model, test_x, test_y, "test set"):
+                log.warning("reached a maximum: " + str(max))
+                green("test accrucy now:"+str(max))
+                model.save("model 181202\\resblock accu" + str(max) + ".h5")
+
+        print("### ",i, " th iteration")
     model.fit(train_x, train_y, batch_size=233, epochs=1)
     wheels.green("The final evaluation:")
     evaluate_model(model, test_x, test_y, "test set")
@@ -177,18 +242,17 @@ def mlp_main(iterations=2500, normalize=False):
 
 def evaluate_model(model, x, y, name=None):
     global max
-    preds = model.evaluate(x, y, verbose=0)
-    # print("the result for", name, ":")
+    preds = model.evaluate(x, y, verbose=1)
+    print("the result for", name, ":")
     # print("loss = ", str(preds[0]))
-    # print("accuracy = ", str(preds[1]))
+    print("accuracy = ", str(preds[1]))
     if preds[1] > max:
         max = preds[1]
         return True
     return False
     
 if __name__ == "__main__":
-
-    conv_main(normalize=True)
+    [res_main(normalize=True) for i in range(100)]
         # sgd with normalization: 76%
         # took MUCH LONGER to train than the numpy version
         # without normalization: 34%  ......
